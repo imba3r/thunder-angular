@@ -2,22 +2,23 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {Subject} from 'rxjs/Subject';
 import {WebSocketSubject} from 'rxjs/observable/dom/WebSocketSubject';
 import {Observable} from 'rxjs/Observable';
-import {distinctUntilChanged, filter, map, take} from 'rxjs/operators';
+import {distinctUntilChanged, filter} from 'rxjs/operators';
 
 const URL = 'ws://localhost:3000/thunder';
 
-export type Operation = 'SNAPSHOT' | 'SUBSCRIBE' | 'INSERT' | 'UPDATE' | 'DELETE' | 'VALUE_CHANGE';
+export type WebSocketOperation = 'SUBSCRIBE' | 'ADD' | 'SET' | 'UPDATE' | 'DELETE' | 'VALUE_CHANGE' | 'SNAPSHOT';
+export type ValueType = 'DOCUMENT' | 'COLLECTION';
 
-export interface Message {
+export interface WebSocketMessage {
   key: string;
-  operation: Operation;
+  operation: WebSocketOperation;
   id?: number;
   payload?: any;
   payloadMetadata?: PayloadMetadata;
 }
 
 export interface PayloadMetadata {
-  type: string;
+  type: ValueType;
   exists: boolean;
 }
 
@@ -25,8 +26,7 @@ export interface PayloadMetadata {
 export class ThunderService implements OnDestroy {
 
   private webSocketSubject$: WebSocketSubject<any>;
-  private messageSubject$: Subject<Message> = new Subject<Message>();
-  private messageID = 0;
+  private messageSubject$: Subject<WebSocketMessage> = new Subject<WebSocketMessage>();
   private subscription;
 
   constructor() {
@@ -45,12 +45,12 @@ export class ThunderService implements OnDestroy {
   }
 
   observe(key: string): Observable<any> {
-    this.send({key: key, operation: 'SUBSCRIBE'});
-    return this.messageSubject$.pipe(
-      filter((msg: Message) => msg.key === key && msg.operation === 'VALUE_CHANGE'),
+    const observable = this.messageSubject$.pipe(
+      filter((msg: WebSocketMessage) => msg.key === key && msg.operation === 'VALUE_CHANGE'),
       distinctUntilChanged(),
-      map((msg: Message) => msg.payload)
     );
+    this.send({key: key, operation: 'SUBSCRIBE'});
+    return observable;
   }
 
   insert(key: string, payload: any): void {
@@ -65,20 +65,7 @@ export class ThunderService implements OnDestroy {
     this.send({key: key, operation: 'DELETE', payload: payload});
   }
 
-  snapshot(key: string): Observable<Message> {
-    const id = this.messageID++;
-
-    const observable = this.messageSubject$.pipe(
-      filter((msg: Message) => msg.key === key && msg.operation === 'SNAPSHOT' && msg.id === id),
-      take(1),
-      map((msg: Message) => msg.payload),
-    );
-
-    this.send({key: key, id: id, operation: 'SNAPSHOT'});
-    return observable;
-  }
-
-  private send(message: Message): void {
+  private send(message: WebSocketMessage): void {
     this.webSocketSubject$.next(JSON.stringify(message));
   }
 }

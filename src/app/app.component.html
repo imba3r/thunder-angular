@@ -1,14 +1,8 @@
 <div>
   <button (click)="send()">Send Update</button>
-  <button (click)="load()">Snapshot</button>
 </div>
 
 <h2>Data:</h2>
 <div>
   {{ doc$ | async | json }}
-</div>
-
-<h2>Snapshot:</h2>
-<div>
-  {{ snapshot$ | async | json }}
 </div>

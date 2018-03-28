@@ -1,5 +1,5 @@
 import {Component} from '@angular/core';
-import {Message, ThunderService} from './thunder.service';
+import {WebSocketMessage, ThunderService} from './thunder.service';
 import {Observable} from 'rxjs/Observable';
 
 @Component({
@@ -9,8 +9,7 @@ import {Observable} from 'rxjs/Observable';
 })
 export class AppComponent {
 
-  private doc$: Observable<any>;
-  private snapshot$: Observable<Message>;
+  private doc$: Observable<WebSocketMessage>;
   private count = 1;
   private documentKey = 'document-key';
 
@@ -23,9 +22,5 @@ export class AppComponent {
       count: this.count++,
       timestamp: new Date(),
     });
-  }
-
-  load(): void {
-    this.snapshot$ = this.thunderService.snapshot(this.documentKey);
   }
 }
