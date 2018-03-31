@@ -7,18 +7,22 @@ import {distinctUntilChanged, filter} from 'rxjs/operators';
 const URL = 'ws://localhost:3000/thunder';
 
 export type WebSocketOperation = 'SUBSCRIBE' | 'ADD' | 'SET' | 'UPDATE' | 'DELETE' | 'VALUE_CHANGE' | 'SNAPSHOT';
-export type ValueType = 'DOCUMENT' | 'COLLECTION';
 
 export interface WebSocketMessage {
   key: string;
   operation: WebSocketOperation;
-  id?: number;
+  requestId?: number;
+  transactionId?: number;
+  error?: Error;
   payload?: any;
   payloadMetadata?: PayloadMetadata;
 }
 
+export interface Error {
+  message: string;
+}
+
 export interface PayloadMetadata {
-  type: ValueType;
   exists: boolean;
 }
 
@@ -53,8 +57,12 @@ export class ThunderService implements OnDestroy {
     return observable;
   }
 
-  insert(key: string, payload: any): void {
-    this.send({key: key, operation: 'INSERT', payload: payload});
+  add(key: string, payload: any): void {
+    this.send({key: key, operation: 'ADD', payload: payload});
+  }
+
+  set(key: string, payload: any): void {
+    this.send({key: key, operation: 'SET', payload: payload});
   }
 
   update(key: string, payload: any): void {
