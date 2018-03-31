@@ -9,12 +9,22 @@ import {Observable} from 'rxjs/Observable';
 })
 export class AppComponent {
 
+  private collection$: Observable<WebSocketMessage>;
   private doc$: Observable<WebSocketMessage>;
   private count = 1;
+  private collectionKey = 'documents';
   private documentKey = 'documents/first';
 
   constructor(private thunderService: ThunderService) {
     this.doc$ = this.thunderService.observe(this.documentKey);
+    this.collection$ = this.thunderService.observe(this.collectionKey);
+  }
+
+  add(): void {
+    this.thunderService.add(this.collectionKey, {
+      count: this.count++,
+      timestamp: new Date(),
+    });
   }
 
   create(): void {
