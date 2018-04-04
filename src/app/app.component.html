@@ -13,5 +13,7 @@
 
 <h2>Collection:</h2>
 <div>
-  {{ collection$ | async | json }}
+  <div *ngFor="let item of collection$ | async">
+    {{ item | json }}
+  </div>
 </div>

@@ -1,6 +1,7 @@
 import {Component} from '@angular/core';
 import {ThunderService, WebSocketMessage} from './thunder.service';
 import {Observable} from 'rxjs/Observable';
+import {map} from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +18,7 @@ export class AppComponent {
 
   constructor(private thunderService: ThunderService) {
     this.doc$ = this.thunderService.observe(this.documentKey);
-    this.collection$ = this.thunderService.observe(this.collectionKey);
+    this.collection$ = this.thunderService.observe(this.collectionKey).pipe(map(v => v.payload));
   }
 
   add(): void {
